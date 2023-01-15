@@ -1,46 +1,86 @@
- x = 0
-score = x
- 
-print("Ile to 1 + 1")
-answer_1 = input("a)1\nb)2\nc)3\nd)4\n:")
-if answer_1.lower() == "b" or answer_1.lower() == "2":
-    print("Correct")
-    x = x + 1   
-else:
-    print("Incorrect, 1 + 1 is 2")
+import pygame
+from random import randint
 
-print("Kto jest 45.Prezydentem Stanów zjednoczonych?")
-answer_2 = input("a)Barack Obama\nb)Hillary Clinton\nc)Donald Trump\nd)Tom Brady\n:")
-if answer_2.lower() == "c" or answer_2.lower() == "donald trump":
-    print("Correct")
-    x = x + 1
-else:
-    print("Niepoprawne, 45 prezydentem jest Donald Trump")
-
-print("True or False... Mieszko pirwszy był pierwszym władcom polski ?")
-answer_3 = input(":")
-if answer_3.lower() == "true" or answer_3.lower() == "t":
-    print("Correct")
-    x = x + 1
-else:
-    print("Niepoprawne")  
-
-print("w którym roku Polska odzyskała niepodległość ?")
-answer_4 = input("a)1918\nb)1955\nc)1987\nd)1994\n:")
-if answer_4.lower() == "a" or answer_4 == "1918":
-    print("Correct")
-    x = x + 1
-else:
-    print("Niepoprawne, Polska odzyskała nie podległość w 1918")
- 
-print("True or False... Obecnym prezydnetem Polski jest Lech Kaczyński?")
-answer_5 = input(":")
-if answer_5.lower() == "false" or answer_5.lower() == "f":
-    print("Correct")
-    x = x + 1
-else:
-    print("Niepoprawne, Obecnym prezydentem Polski jest Andzej Duda")
+pygame.init()
+window = pygame.display.set_mode((1280, 720))
 
 
-score = float(x / 5) * 100
-print(x,"out of 5, that is",score, "%")
+class Player:
+    def __init__(self):
+        self.x_cord = 0
+        self.y_cord = 0
+        self.image = pygame.image.load("gracz.png")
+        self.width = self.image.get_width()
+        self.height = self.image.get_height()
+        self.speed = 4
+        self.hitbox = pygame.Rect(self.x_cord, self.y_cord, self.width, self.height)
+
+    def tick(self, keys):
+        if keys[pygame.K_w]:
+            self.y_cord -= self.speed
+        if keys[pygame.K_a]:
+            self.x_cord -= self.speed
+        if keys[pygame.K_s]:
+            self.y_cord += self.speed
+        if keys[pygame.K_d]:
+            self.x_cord += self.speed
+
+        self.hitbox = pygame.Rect(self.x_cord, self.y_cord, self.width, self.height)
+
+    def draw(self):
+        window.blit(self.image, (self.x_cord, self.y_cord))
+
+
+class Cash:
+    def __init__(self):
+        self.x_cord = randint(0, 1280)
+        self.y_cord = randint(0, 720)
+        self.image = pygame.image.load("banknot.png")
+        self.width = self.image.get_width()
+        self.height = self.image.get_height()
+        self.hitbox = pygame.Rect(self.x_cord, self.y_cord, self.width, self.height)
+
+    def tick(self):
+        self.hitbox = pygame.Rect(self.x_cord, self.y_cord, self.width, self.height)
+
+    def draw(self):
+        window.blit(self.image, (self.x_cord, self.y_cord))
+
+
+def main():
+    run = True
+    player = Player()
+    clock = 0
+    score = 0
+    banknotes = []
+    background = pygame.image.load("tło.png")
+    while run:
+        clock += pygame.time.Clock().tick(60) / 1000
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                run = False
+        keys = pygame.key.get_pressed()
+        if clock >= 2:
+            clock = 0
+            banknotes.append(Cash())
+
+        player.tick(keys)
+        for banknote in banknotes:
+            banknote.tick()
+
+        for banknote in banknotes:
+            if player.hitbox.colliderect(banknote.hitbox):
+                banknotes.remove(banknote)
+                score += 1
+
+        window.blit(background, (0, 0))
+        player.draw()
+        for banknote in banknotes:
+            banknote.draw()
+        pygame.display.update()
+
+    print(score)
+
+
+if __name__ == "__main__":
+    main()
